@@ -24,6 +24,7 @@ import { genUserName } from '@/lib/genUserName';
 import { getSafeProfileImage } from '@/lib/imageUtils';
 import { useNavigate } from 'react-router-dom';
 import { nip19 } from 'nostr-tools';
+import type { NostrMetadata } from '@nostrify/nostrify';
 
 interface FollowListDialogProps {
   open: boolean;
@@ -32,18 +33,19 @@ interface FollowListDialogProps {
   type: 'followers' | 'following';
 }
 
-function UserListItem({ 
-  pubkey, 
-  currentUserPubkey 
-}: { 
-  pubkey: string; 
+function UserListItem({
+  pubkey,
+  currentUserPubkey,
+  metadata: providedMetadata,
+}: {
+  pubkey: string;
   currentUserPubkey: string | undefined;
+  metadata?: NostrMetadata;
 }) {
   const navigate = useNavigate();
-  const { metadata, isLoading: metadataLoading } = useBatchedAuthors([pubkey]);
   const { isFollowing, followUser, unfollowUser } = useFollowRelationship(pubkey);
-  
-  const userMetadata = metadata?.[pubkey];
+
+  const userMetadata = providedMetadata;
   const displayName = userMetadata?.display_name || userMetadata?.name || genUserName(pubkey);
   const userName = userMetadata?.name || genUserName(pubkey);
   const profileImage = getSafeProfileImage(userMetadata?.picture) || `https://api.dicebear.com/7.x/identicon/svg?seed=${pubkey}`;
@@ -66,7 +68,7 @@ function UserListItem({
   };
 
   return (
-    <div 
+    <div
       className="flex items-center justify-between p-3 hover:bg-accent rounded-lg cursor-pointer transition-colors"
       onClick={handleProfileClick}
     >
@@ -77,7 +79,7 @@ function UserListItem({
             {displayName.slice(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <p className="font-semibold truncate">{displayName}</p>
@@ -136,7 +138,7 @@ export function FollowListDialog({
   type,
 }: FollowListDialogProps) {
   const { user } = useCurrentUser();
-  
+
   // Fetch the appropriate list based on type
   const { data: followers, isLoading: followersLoading } = useFollowers(
     type === 'followers' ? pubkey : undefined
@@ -148,39 +150,45 @@ export function FollowListDialog({
   const userList = type === 'followers' ? followers : following;
   const isLoading = type === 'followers' ? followersLoading : followingLoading;
 
-  const title = type === 'followers' 
-    ? `Followers (${userList?.length || 0})` 
+  // Prefetch all user metadata when list is loaded
+  const { metadata: allMetadata } = useBatchedAuthors(userList || []);
+
+  const title = type === 'followers'
+    ? `Followers (${userList?.length || 0})`
     : `Following (${userList?.length || 0})`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[80vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b">
+      <DialogContent className="sm:max-w-[500px] h-[80vh] flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b flex-shrink-0">
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 px-6 pb-6">
-          {isLoading ? (
-            <div className="space-y-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <LoadingSkeleton key={i} />
-              ))}
-            </div>
-          ) : userList && userList.length > 0 ? (
-            <div className="space-y-1">
-              {userList.map((userPubkey) => (
-                <UserListItem
-                  key={userPubkey}
-                  pubkey={userPubkey}
-                  currentUserPubkey={user?.pubkey}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              {type === 'followers' ? 'No followers yet' : 'Not following anyone yet'}
-            </div>
-          )}
+        <ScrollArea className="flex-1 min-h-0">
+          <div className="px-6 pb-6">
+            {isLoading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <LoadingSkeleton key={i} />
+                ))}
+              </div>
+            ) : userList && userList.length > 0 ? (
+              <div className="space-y-1">
+                {userList.map((userPubkey) => (
+                  <UserListItem
+                    key={userPubkey}
+                    pubkey={userPubkey}
+                    currentUserPubkey={user?.pubkey}
+                    metadata={allMetadata?.[userPubkey]?.metadata}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                {type === 'followers' ? 'No followers yet' : 'Not following anyone yet'}
+              </div>
+            )}
+          </div>
         </ScrollArea>
       </DialogContent>
     </Dialog>
