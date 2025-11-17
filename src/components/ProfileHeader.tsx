@@ -1,6 +1,7 @@
 // ABOUTME: Profile header component showing user avatar, bio, stats, and follow button
 // ABOUTME: Displays user metadata, social stats, and follow/unfollow functionality
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +12,7 @@ import { getSafeProfileImage } from '@/lib/imageUtils';
 import { toast } from '@/hooks/useToast';
 import { nip19 } from 'nostr-tools';
 import type { NostrMetadata } from '@nostrify/nostrify';
+import { FollowListDialog } from '@/components/FollowListDialog';
 
 export interface ProfileStats {
   videosCount: number;
@@ -64,6 +66,9 @@ export function ProfileHeader({
   isLoading: _isLoading = false,
   className,
 }: ProfileHeaderProps) {
+  const [followListOpen, setFollowListOpen] = useState(false);
+  const [followListType, setFollowListType] = useState<'followers' | 'following'>('followers');
+
   // Show loading text if metadata hasn't loaded yet
   const displayName = metadata?.display_name || metadata?.name || (!metadata ? "Loading profile..." : genUserName(pubkey));
   const userName = metadata?.name || (!metadata ? "Loading profile..." : genUserName(pubkey));
@@ -91,6 +96,16 @@ export function ProfileHeader({
         variant: "destructive",
       });
     }
+  };
+
+  const handleFollowersClick = () => {
+    setFollowListType('followers');
+    setFollowListOpen(true);
+  };
+
+  const handleFollowingClick = () => {
+    setFollowListType('following');
+    setFollowListOpen(true);
   };
 
   return (
@@ -221,7 +236,18 @@ export function ProfileHeader({
         </div>
 
         {/* Followers Count */}
-        <div className="text-center">
+        <div
+          className="text-center cursor-pointer hover:bg-accent rounded-lg p-2 transition-colors"
+          onClick={handleFollowersClick}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleFollowersClick();
+            }
+          }}
+        >
           {stats ? (
             <>
               <div className="text-xl sm:text-2xl font-bold">
@@ -238,7 +264,18 @@ export function ProfileHeader({
         </div>
 
         {/* Following Count */}
-        <div className="text-center">
+        <div
+          className="text-center cursor-pointer hover:bg-accent rounded-lg p-2 transition-colors"
+          onClick={handleFollowingClick}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleFollowingClick();
+            }
+          }}
+        >
           {stats ? (
             <>
               <div className="text-xl sm:text-2xl font-bold">
@@ -291,6 +328,14 @@ export function ProfileHeader({
           )}
         </div>
       </div>
+
+      {/* Follow List Dialog */}
+      <FollowListDialog
+        open={followListOpen}
+        onOpenChange={setFollowListOpen}
+        pubkey={pubkey}
+        type={followListType}
+      />
     </div>
   );
 }
