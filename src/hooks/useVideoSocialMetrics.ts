@@ -14,25 +14,55 @@ export interface VideoSocialMetrics {
 /**
  * Fetch social interaction metrics for a video event
  * Uses batched queries to efficiently fetch likes, reposts, and views
+ *
+ * Note: videoPubkey is required for kind 34236 (addressable) events to build the 'a' tag reference
  */
-export function useVideoSocialMetrics(videoId: string, _videoPubkey?: string) {
+export function useVideoSocialMetrics(videoId: string, videoPubkey?: string, vineId?: string) {
   const { nostr } = useNostr();
 
   return useQuery({
-    queryKey: ['video-social-metrics', videoId],
+    queryKey: ['video-social-metrics', videoId, videoPubkey, vineId],
     queryFn: async (context) => {
       const signal = AbortSignal.any([context.signal, AbortSignal.timeout(3000)]);
 
       try {
-        // Batch query for all social interactions related to this video
-        // Using a single query with multiple kinds for efficiency
-        const events = await nostr.query([
-          {
-            kinds: [1, 6, 7, 1111, 9735], // comments, reposts, reactions, NIP-22 comments, zap receipts
-            '#e': [videoId], // events that reference this video
-            limit: 500, // generous limit to capture all interactions
-          }
-        ], { signal });
+        // Build addressable event reference for kind 34236 videos
+        // Format: "34236:pubkey:d-tag-value"
+        const addressableRef = videoPubkey && vineId ? `34236:${videoPubkey}:${vineId}` : null;
+
+        // Build filter array - we need multiple queries because Nostr filters are OR within a filter, AND between filters
+        const filters = [];
+
+        // Query 1: Events that reference this video by event ID (e/E tags) - for backwards compatibility
+        filters.push({
+          kinds: [1, 6, 7, 1111, 9735], // comments, reposts, reactions, NIP-22 comments, zap receipts
+          '#e': [videoId], // lowercase e tag
+          limit: 500,
+        });
+
+        filters.push({
+          kinds: [1, 6, 7, 1111, 9735],
+          '#E': [videoId], // uppercase E tag (NIP-22 uses this)
+          limit: 500,
+        });
+
+        // Query 2: Events that reference this video by addressable reference (a/A tags) - correct way for kind 34236
+        if (addressableRef) {
+          filters.push({
+            kinds: [1, 6, 7, 1111, 9735],
+            '#a': [addressableRef], // lowercase a tag
+            limit: 500,
+          });
+
+          filters.push({
+            kinds: [1, 6, 7, 1111, 9735],
+            '#A': [addressableRef], // uppercase A tag (NIP-22 uses this for root)
+            limit: 500,
+          });
+        }
+
+        // Execute all queries
+        const events = await nostr.query(filters, { signal });
 
         let likeCount = 0;
         let repostCount = 0;
@@ -98,11 +128,11 @@ export function useVideoSocialMetrics(videoId: string, _videoPubkey?: string) {
 /**
  * Check if the current user has liked a specific video and get the event IDs for deletion
  */
-export function useVideoUserInteractions(videoId: string, userPubkey?: string) {
+export function useVideoUserInteractions(videoId: string, userPubkey?: string, videoPubkey?: string, vineId?: string) {
   const { nostr } = useNostr();
 
   return useQuery({
-    queryKey: ['video-user-interactions', videoId, userPubkey],
+    queryKey: ['video-user-interactions', videoId, userPubkey, videoPubkey, vineId],
     queryFn: async (context) => {
       if (!userPubkey) {
         return { hasLiked: false, hasReposted: false, likeEventId: null, repostEventId: null };
@@ -111,15 +141,30 @@ export function useVideoUserInteractions(videoId: string, userPubkey?: string) {
       const signal = AbortSignal.any([context.signal, AbortSignal.timeout(2000)]);
 
       try {
-        // Query for user's interactions with this video
-        const events = await nostr.query([
-          {
-            kinds: [6, 7], // reposts, reactions
+        // Build addressable event reference for kind 34236 videos
+        const addressableRef = videoPubkey && vineId ? `34236:${videoPubkey}:${vineId}` : null;
+
+        const filters = [];
+
+        // Query for user's interactions with this video by event ID
+        filters.push({
+          kinds: [6, 7], // reposts, reactions
+          authors: [userPubkey],
+          '#e': [videoId],
+          limit: 10,
+        });
+
+        // Query for user's interactions with this video by addressable reference
+        if (addressableRef) {
+          filters.push({
+            kinds: [6, 7],
             authors: [userPubkey],
-            '#e': [videoId],
+            '#a': [addressableRef],
             limit: 10,
-          }
-        ], { signal });
+          });
+        }
+
+        const events = await nostr.query(filters, { signal });
 
         let hasLiked = false;
         let hasReposted = false;

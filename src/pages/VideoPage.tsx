@@ -259,8 +259,8 @@ export function VideoPage() {
 
   // Helper component to provide social metrics data for the video
   function VideoCardWithMetrics({ video }: { video: ParsedVideoData }) {
-    const { data: socialMetrics } = useVideoSocialMetrics(video.id, video.pubkey);
-    const { data: userInteractions } = useVideoUserInteractions(video.id, user?.pubkey);
+    const { data: socialMetrics } = useVideoSocialMetrics(video.id, video.pubkey, video.vineId || undefined);
+    const { data: userInteractions } = useVideoUserInteractions(video.id, user?.pubkey, video.pubkey, video.vineId || undefined);
 
     const handleVideoLike = async () => {
       if (userInteractions?.hasLiked) {

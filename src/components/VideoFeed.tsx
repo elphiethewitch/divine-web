@@ -322,8 +322,8 @@ export function VideoFeed({
 
   // Helper component to provide social metrics data for each video
   function VideoCardWithMetrics({ video, index }: { video: ParsedVideoData; index: number }) {
-    const { data: socialMetrics } = useVideoSocialMetrics(video.id, video.pubkey);
-    const { data: userInteractions } = useVideoUserInteractions(video.id, user?.pubkey);
+    const { data: socialMetrics } = useVideoSocialMetrics(video.id, video.pubkey, video.vineId || undefined);
+    const { data: userInteractions } = useVideoUserInteractions(video.id, user?.pubkey, video.pubkey, video.vineId || undefined);
 
     const handleVideoLike = async () => {
       // Check authentication first, show login dialog if not authenticated
