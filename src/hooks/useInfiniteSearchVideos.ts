@@ -29,10 +29,9 @@ interface VideoPage {
 function validateVideoEvent(event: NostrEvent): boolean {
   if (!VIDEO_KINDS.includes(event.kind)) return false;
 
-  if (event.kind === 34236) {
-    const vineId = getVineId(event);
-    if (!vineId) return false;
-  }
+  // Kind 34236 (addressable/replaceable event) MUST have d tag per NIP-33
+  const vineId = getVineId(event);
+  if (!vineId) return false;
 
   return true;
 }
@@ -50,12 +49,12 @@ function parseVideoEvents(events: NostrEvent[]): ParsedVideoData[] {
     if (!videoEvent) continue;
 
     const vineId = getVineId(event);
-    if (!vineId && event.kind === 34236) continue;
+    if (!vineId) continue; // All videos are kind 34236 which require vineId
 
     parsedVideos.push({
       id: event.id,
       pubkey: event.pubkey,
-      kind: event.kind as 21 | 22 | 34236,
+      kind: event.kind as 34236,
       createdAt: event.created_at,
       originalVineTimestamp: getOriginalVineTimestamp(event),
       content: event.content,

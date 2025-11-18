@@ -27,7 +27,7 @@ export function VideoCommentsModal({
     id: video.id,
     pubkey: video.pubkey,
     created_at: video.createdAt,
-    kind: video.kind, // NIP-71 video kind (21, 22, or 34236)
+    kind: video.kind, // NIP-71 video kind (34236)
     content: video.content,
     tags: [
       ['url', video.videoUrl],

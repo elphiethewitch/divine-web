@@ -109,7 +109,7 @@ export function VideoMetadataForm({
         title: title.trim(),
         duration: Math.round(uploadResult.duration / 1000), // Convert ms to seconds
         hashtags,
-        kind: 34236, // Legacy short video kind for backward compatibility
+        kind: 34236, // Kind 34236 - addressable short video event
       });
 
       toast({
@@ -128,9 +128,9 @@ export function VideoMetadataForm({
     }
   };
 
-  const currentProgress = isUploading 
+  const currentProgress = isUploading
     ? uploadProgress * 80 // Upload is 80% of total progress
-    : isPublishing 
+    : isPublishing
     ? 80 + (20) // Publishing is the final 20%
     : 0;
 

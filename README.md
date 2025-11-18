@@ -4,12 +4,18 @@ OpenVine-compatible Nostr client for short-form looping videos. Built with React
 
 ## Features
 
-- **6-second looping videos** (Kind 34236 - NIP-71)
+- **6-second looping videos** (Kind 34236 only)
 - **MP4 and GIF support** with auto-loop playback
 - **Blurhash placeholders** for smooth progressive loading
 - **Social features**: Likes, reposts, follows, hashtag discovery
 - **Feed types**: Home (following), Discovery, Trending, Hashtag, Profile
 - **Primary relay**: wss://relay.divine.video
+
+## Video Event Format
+
+This app **only supports Kind 34236** (addressable/replaceable video events). Support for Kinds 21 and 22 has been removed.
+
+All video events must include a `d` tag (vine ID) to be valid and displayable in the app.
 
 ## Relay Architecture
 
