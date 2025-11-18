@@ -2,7 +2,8 @@
 // ABOUTME: Extracts video URLs and metadata from multiple tag sources with fallback to content parsing
 
 import type { NostrEvent } from '@nostrify/nostrify';
-import type { VideoMetadata, VideoEvent, ProofModeData, ProofModeLevel } from '@/types/video';
+import type { VideoMetadata, VideoEvent, ProofModeData, ProofModeLevel, ParsedVideoData, RepostMetadata } from '@/types/video';
+import { VIDEO_KINDS } from '@/types/video';
 
 // Common video file extensions - used only as hints, not requirements
 const _VIDEO_EXTENSIONS = ['.mp4', '.webm', '.mov', '.gif', '.m3u8', '.mpd', '.avi', '.mkv', '.ogv', '.ogg'];
@@ -513,8 +514,6 @@ export function getThumbnailUrl(event: VideoEvent): string | undefined {
  * Helper functions for working with ParsedVideoData reposts array
  */
 
-import type { ParsedVideoData, RepostMetadata } from '@/types/video';
-
 /**
  * Check if a video has been reposted
  */
@@ -561,4 +560,68 @@ export function addRepost(video: ParsedVideoData, repost: RepostMetadata): Parse
     ...video,
     reposts: [...(video.reposts || []), repost]
   };
+}
+
+/**
+ * Validates that a NIP-71 video event has required fields
+ * Exported for use in hooks
+ */
+export function validateVideoEvent(event: NostrEvent): boolean {
+  if (!VIDEO_KINDS.includes(event.kind)) return false;
+
+  if (event.kind === 34236) {
+    const vineId = getVineId(event);
+    if (!vineId) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Parse video events into standardized ParsedVideoData format
+ * Simple synchronous version for infinite scroll hooks
+ */
+export function parseVideoEvents(events: NostrEvent[]): ParsedVideoData[] {
+  const parsedVideos: ParsedVideoData[] = [];
+
+  for (const event of events) {
+    if (!validateVideoEvent(event)) continue;
+
+    const videoEvent = parseVideoEvent(event);
+    if (!videoEvent) continue;
+
+    const vineId = getVineId(event);
+    if (!vineId && event.kind === 34236) continue;
+
+    parsedVideos.push({
+      id: event.id,
+      pubkey: event.pubkey,
+      kind: event.kind as 34236,
+      createdAt: event.created_at,
+      originalVineTimestamp: getOriginalVineTimestamp(event),
+      content: event.content,
+      videoUrl: videoEvent.videoMetadata!.url,
+      fallbackVideoUrls: videoEvent.videoMetadata?.fallbackUrls,
+      hlsUrl: videoEvent.videoMetadata?.hlsUrl,
+      thumbnailUrl: getThumbnailUrl(videoEvent),
+      blurhash: videoEvent.videoMetadata?.blurhash,
+      title: videoEvent.title,
+      duration: videoEvent.videoMetadata?.duration,
+      hashtags: videoEvent.hashtags || [],
+      vineId,
+      loopCount: getLoopCount(event),
+      likeCount: getOriginalLikeCount(event),
+      repostCount: getOriginalRepostCount(event),
+      commentCount: getOriginalCommentCount(event),
+      proofMode: getProofModeData(event),
+      origin: getOriginPlatform(event),
+      isVineMigrated: isVineMigrated(event),
+      reposts: [],
+      originalEvent: event
+    });
+  }
+
+  return parsedVideos;
 }
