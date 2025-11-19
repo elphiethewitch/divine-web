@@ -3,35 +3,8 @@
 
 import { useState } from 'react';
 import { VideoFeed } from '@/components/VideoFeed';
-import { Flame, TrendingUp, Zap, Scale } from 'lucide-react';
 import type { SortMode } from '@/types/nostr';
-
-const SORT_MODES = [
-  {
-    value: 'hot' as SortMode,
-    label: 'Hot',
-    description: 'Recent + high engagement',
-    icon: Flame
-  },
-  {
-    value: 'top' as SortMode,
-    label: 'Top',
-    description: 'Most popular all-time',
-    icon: TrendingUp
-  },
-  {
-    value: 'rising' as SortMode,
-    label: 'Rising',
-    description: 'Gaining traction',
-    icon: Zap
-  },
-  {
-    value: 'controversial' as SortMode,
-    label: 'Controversial',
-    description: 'Mixed reactions',
-    icon: Scale
-  },
-];
+import { STANDARD_SORT_MODES } from '@/lib/constants/sortModes';
 
 export function TrendingPage() {
   const [sortMode, setSortMode] = useState<SortMode>('hot');
@@ -49,13 +22,13 @@ export function TrendingPage() {
 
           {/* Sort mode selector as prominent tabs/buttons */}
           <div className="flex flex-wrap gap-2">
-            {SORT_MODES.map(mode => {
+            {STANDARD_SORT_MODES.map(mode => {
               const ModeIcon = mode.icon;
               const isSelected = sortMode === mode.value;
               return (
                 <button
                   key={mode.value}
-                  onClick={() => setSortMode(mode.value)}
+                  onClick={() => setSortMode(mode.value!)}
                   className={`
                     flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
                     ${isSelected

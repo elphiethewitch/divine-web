@@ -8,15 +8,9 @@ import { useFollowList } from '@/hooks/useFollowList';
 import { LoginArea } from '@/components/auth/LoginArea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Flame, TrendingUp, Zap, Clock, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import type { SortMode } from '@/types/nostr';
-
-const SORT_MODES = [
-  { value: 'hot' as SortMode, label: 'Hot', icon: Flame, description: 'Recent + high engagement' },
-  { value: 'top' as SortMode, label: 'Top', icon: TrendingUp, description: 'Most popular' },
-  { value: 'rising' as SortMode, label: 'Rising', icon: Zap, description: 'Gaining traction' },
-  { value: undefined as SortMode | undefined, label: 'Recent', icon: Clock, description: 'Latest videos' },
-];
+import { HOME_SORT_MODES } from '@/lib/constants/sortModes';
 
 export function HomePage() {
   const { user } = useCurrentUser();
@@ -46,7 +40,7 @@ export function HomePage() {
     );
   }
 
-  const selectedMode = SORT_MODES.find(m => m.value === sortMode);
+  const selectedMode = HOME_SORT_MODES.find(m => m.value === sortMode);
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -83,7 +77,7 @@ export function HomePage() {
                 </div>
               </SelectTrigger>
               <SelectContent>
-                {SORT_MODES.map(mode => (
+                {HOME_SORT_MODES.map(mode => (
                   <SelectItem key={mode.value || 'recent'} value={mode.value || 'recent'}>
                     <div className="flex items-center gap-2">
                       <mode.icon className="h-4 w-4" />
