@@ -62,7 +62,14 @@ export function useVideoSocialMetrics(videoId: string, videoPubkey?: string, vin
         }
 
         // Execute all queries
-        const events = await nostr.query(filters, { signal });
+        const allEvents = await nostr.query(filters, { signal });
+
+        // Deduplicate events by ID (same event might be returned from multiple filter queries)
+        const uniqueEvents = new Map<string, typeof allEvents[0]>();
+        for (const event of allEvents) {
+          uniqueEvents.set(event.id, event);
+        }
+        const events = Array.from(uniqueEvents.values());
 
         let likeCount = 0;
         let repostCount = 0;
@@ -164,7 +171,14 @@ export function useVideoUserInteractions(videoId: string, userPubkey?: string, v
           });
         }
 
-        const events = await nostr.query(filters, { signal });
+        const allEvents = await nostr.query(filters, { signal });
+
+        // Deduplicate events by ID
+        const uniqueEvents = new Map<string, typeof allEvents[0]>();
+        for (const event of allEvents) {
+          uniqueEvents.set(event.id, event);
+        }
+        const events = Array.from(uniqueEvents.values());
 
         let hasLiked = false;
         let hasReposted = false;
