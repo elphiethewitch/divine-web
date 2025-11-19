@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { VideoFeed } from '@/components/VideoFeed';
+import { PageLayout } from '@/components/PageLayout';
 import { VerifiedOnlyToggle } from '@/components/VerifiedOnlyToggle';
 import { HashtagExplorer } from '@/components/HashtagExplorer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,9 +18,8 @@ export function DiscoveryPage() {
   // and supports NIP-50 search required for discovery features
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className={activeTab === 'hashtags' ? 'max-w-6xl mx-auto' : 'max-w-2xl mx-auto'}>
-        <header className="mb-6 space-y-4">
+    <PageLayout maxWidth={activeTab === 'hashtags' ? '6xl' : '2xl'}>
+      <header className="mb-6 space-y-4">
           <div className="flex items-start justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold">Discover</h1>
@@ -101,12 +101,11 @@ export function DiscoveryPage() {
             />
           </TabsContent>
 
-          <TabsContent value="hashtags" className="mt-0 space-y-6">
-            <HashtagExplorer />
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
+        <TabsContent value="hashtags" className="mt-0 space-y-6">
+          <HashtagExplorer />
+        </TabsContent>
+      </Tabs>
+    </PageLayout>
   );
 }
 

@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { VideoFeed } from '@/components/VideoFeed';
+import { PageLayout } from '@/components/PageLayout';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useFollowList } from '@/hooks/useFollowList';
 import { LoginArea } from '@/components/auth/LoginArea';
@@ -24,28 +25,25 @@ export function HomePage() {
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 py-6">
-        <div className="max-w-2xl mx-auto">
-          <Card>
-            <CardContent className="py-12 text-center">
-              <h2 className="text-xl font-semibold mb-4">Welcome to Your Home Feed</h2>
-              <p className="text-muted-foreground mb-6">
-                Sign in to see videos from people you follow
-              </p>
-              <LoginArea className="max-w-60 mx-auto" />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <PageLayout>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <h2 className="text-xl font-semibold mb-4">Welcome to Your Home Feed</h2>
+            <p className="text-muted-foreground mb-6">
+              Sign in to see videos from people you follow
+            </p>
+            <LoginArea className="max-w-60 mx-auto" />
+          </CardContent>
+        </Card>
+      </PageLayout>
     );
   }
 
   const selectedMode = HOME_SORT_MODES.find(m => m.value === sortMode);
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="max-w-2xl mx-auto">
-        <header className="mb-6 space-y-4">
+    <PageLayout>
+      <header className="mb-6 space-y-4">
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold">Home</h1>
@@ -95,14 +93,13 @@ export function HomePage() {
           </div>
         </header>
 
-        <VideoFeed
-          feedType="home"
-          sortMode={sortMode}
-          data-testid="video-feed-home"
-          className="space-y-6"
-        />
-      </div>
-    </div>
+      <VideoFeed
+        feedType="home"
+        sortMode={sortMode}
+        data-testid="video-feed-home"
+        className="space-y-6"
+      />
+    </PageLayout>
   );
 }
 

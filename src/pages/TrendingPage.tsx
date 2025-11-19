@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { VideoFeed } from '@/components/VideoFeed';
+import { PageLayout } from '@/components/PageLayout';
 import type { SortMode } from '@/types/nostr';
 import { STANDARD_SORT_MODES } from '@/lib/constants/sortModes';
 
@@ -10,9 +11,8 @@ export function TrendingPage() {
   const [sortMode, setSortMode] = useState<SortMode>('hot');
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="max-w-2xl mx-auto">
-        <header className="mb-6 space-y-4">
+    <PageLayout>
+      <header className="mb-6 space-y-4">
           <div>
             <h1 className="text-2xl font-bold">Trending</h1>
             <p className="text-muted-foreground">
@@ -48,16 +48,15 @@ export function TrendingPage() {
               );
             })}
           </div>
-        </header>
+      </header>
 
-        <VideoFeed
-          feedType="trending"
-          sortMode={sortMode}
-          data-testid="video-feed-trending"
-          className="space-y-6"
-        />
-      </div>
-    </div>
+      <VideoFeed
+        feedType="trending"
+        sortMode={sortMode}
+        data-testid="video-feed-trending"
+        className="space-y-6"
+      />
+    </PageLayout>
   );
 }
 

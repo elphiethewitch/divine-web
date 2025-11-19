@@ -6,6 +6,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Grid3X3, List, Hash } from 'lucide-react';
 import { useSeoMeta } from '@unhead/react';
 import { VideoFeed } from '@/components/VideoFeed';
+import { PageLayout } from '@/components/PageLayout';
 import { useVideoEvents } from '@/hooks/useVideoEvents';
 import { parseHashtags, formatHashtag } from '@/lib/hashtag';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -89,24 +90,22 @@ export function HashtagPage() {
 
   if (!normalizedTag || normalizedTag.trim() === '') {
     return (
-      <div className="container mx-auto px-4 py-6">
-        <div className="max-w-2xl mx-auto">
-          <Card>
-            <CardContent className="py-12 text-center">
-              <h2 className="text-xl font-semibold mb-4">Invalid Hashtag</h2>
-              <p className="text-muted-foreground">
-                No hashtag specified in the URL
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <PageLayout>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <h2 className="text-xl font-semibold mb-4">Invalid Hashtag</h2>
+            <p className="text-muted-foreground">
+              No hashtag specified in the URL
+            </p>
+          </CardContent>
+        </Card>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <PageLayout maxWidth="4xl">
+      <div className="space-y-6">
         {/* Navigation */}
         <div className="flex items-center gap-4">
           <Link
@@ -229,18 +228,18 @@ export function HashtagPage() {
           </Card>
         )}
 
-        {/* Video Feed with sort mode */}
-        <VideoFeed
-          feedType="hashtag"
-          hashtag={normalizedTag}
-          sortMode={sortMode}
-          viewMode={viewMode}
-          data-testid="video-feed-hashtag"
-          data-hashtag-testid={`feed-hashtag-${normalizedTag}`}
-          className={viewMode === 'grid' ? '' : 'space-y-6'}
-        />
+      {/* Video Feed with sort mode */}
+      <VideoFeed
+        feedType="hashtag"
+        hashtag={normalizedTag}
+        sortMode={sortMode}
+        viewMode={viewMode}
+        data-testid="video-feed-hashtag"
+        data-hashtag-testid={`feed-hashtag-${normalizedTag}`}
+        className={viewMode === 'grid' ? '' : 'space-y-6'}
+      />
       </div>
-    </div>
+    </PageLayout>
   );
 }
 
