@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '@/hooks/useAppContext';
 import { debugLog, verboseLog } from '@/lib/debug';
 import { createCachedNostr } from '@/lib/cachedNostr';
+import { DIVINE_RELAY_URL } from '@/lib/constants/relays';
 
 interface NostrProviderProps {
   children: React.ReactNode;
@@ -93,7 +94,7 @@ const NostrProvider: React.FC<NostrProviderProps> = (props) => {
         // Route kind 0 and kind 3 queries to profile-specific relays for better availability
         if (profileRelayFilters.length > 0) {
           const profileRelays = [
-            'wss://relay.divine.video',
+            DIVINE_RELAY_URL,
             'wss://purplepag.es',
             'wss://relay.damus.io',
             'wss://relay.ditto.pub',
@@ -125,7 +126,7 @@ const NostrProvider: React.FC<NostrProviderProps> = (props) => {
         // For contact lists (kind 3), publish to multiple relays for better availability
         if (event.kind === 3) {
           // Add common relays where contact lists should be stored
-          allRelays.add('wss://relay.divine.video');
+          allRelays.add(DIVINE_RELAY_URL);
           allRelays.add('wss://purplepag.es');
           allRelays.add('wss://relay.primal.net');
           allRelays.add('wss://relay.damus.io');
@@ -136,7 +137,7 @@ const NostrProvider: React.FC<NostrProviderProps> = (props) => {
         const LIST_KINDS = [30000, 30001, 30005];
         if (LIST_KINDS.includes(event.kind)) {
           // Add common relays where lists should be stored
-          allRelays.add('wss://relay.divine.video');
+          allRelays.add(DIVINE_RELAY_URL);
           allRelays.add('wss://purplepag.es');
           allRelays.add('wss://relay.damus.io');
           allRelays.add('wss://relay.primal.net');

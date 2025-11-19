@@ -7,6 +7,7 @@ import { AppProvider } from '@/components/AppProvider';
 import { NWCProvider } from '@/contexts/NWCContext';
 import { VideoPlaybackProvider } from '@/contexts/VideoPlaybackContext';
 import { AppConfig } from '@/contexts/AppContext';
+import { DIVINE_RELAY_URL } from '@/lib/constants/relays';
 
 interface TestAppProps {
   children: React.ReactNode;
@@ -24,7 +25,7 @@ export function TestApp({ children }: TestAppProps) {
 
   const defaultConfig: AppConfig = {
     theme: 'light',
-    relayUrl: 'wss://relay.divine.video',
+    relayUrl: DIVINE_RELAY_URL,
   };
 
   return (

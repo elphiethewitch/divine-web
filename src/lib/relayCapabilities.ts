@@ -2,6 +2,7 @@
 // ABOUTME: Provides graceful fallback when relays don't support advanced features
 
 import type { SortMode } from '@/types/nostr';
+import { supportsNIP50 as checkNIP50Support } from '@/lib/constants/relays';
 
 export interface RelayCapabilities {
   url: string;
@@ -21,21 +22,8 @@ const capabilitiesCache = new Map<string, RelayCapabilities>();
  */
 async function testNIP50Support(relayUrl: string): Promise<boolean> {
   try {
-    // We'll use the Nostr client to test this
-    // For now, assume relay.divine.video and similar support it
-    // This is a placeholder - full implementation would actually query the relay
-
-    // Known relays with NIP-50 support (including OpenVine relays)
-    const knownNIP50Relays = [
-      'relay.divine.video',
-      'relay.nostr.band',
-      'relay.nostr.wine',
-      'relay.openvine.co',
-      'relay2.openvine.co',
-      'relay3.openvine.co',
-    ];
-
-    return knownNIP50Relays.some(known => relayUrl.includes(known));
+    // Use centralized NIP-50 support checking from constants
+    return checkNIP50Support(relayUrl);
   } catch {
     return false;
   }
